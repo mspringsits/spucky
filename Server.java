@@ -1,8 +1,4 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -43,24 +39,19 @@ public class Server {
 			Socket s = null;
 			while(true) {
 				s = server.accept();
+				Request r = new Request(s);
+				r.start();
+				System.out.println("started");
 				
-				// read header or get request
-				BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
-				String content = "";
-				String cur = "";
-				//try
-				while(!((cur = br.readLine()).equals(""))) {
-					content += cur+"\n";
-				}
-				System.out.println(content);
-				
-				// simple response
-				BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
-				bw.write(response);
-				bw.flush();
-				//bw.close();
-				//br.close();
-				s.close();
+				/*
+				 * // simple response
+					BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
+					bw.write(response);
+					bw.flush();
+					//bw.close();
+					//br.close();
+					s.close();
+				 */
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
