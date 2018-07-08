@@ -42,6 +42,10 @@ public class Server {
 	    this.port = port;
 	    this.root = root;
     }
+
+    public Path getRoot() {
+	    return this.root;
+    }
 	
 	public void start() throws IOException {
 	    ServerSocket server = null;
@@ -50,7 +54,7 @@ public class Server {
 			Socket s = null;
 			while(true) {
 				s = server.accept();
-				Connection r = new Connection(s);
+				Connection r = new Connection(this, s);
 
 				r.start();
 				System.out.println("started");

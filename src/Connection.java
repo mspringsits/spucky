@@ -5,12 +5,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class Connection extends Thread {
-	
+
+    private Server server;
+
 	private Socket socket;
 	private BufferedReader reader;
 	private BufferedWriter writer;
+
 	private Method method;
 	private String resource;
 	private HTTPCode responseCode;
@@ -36,7 +41,8 @@ public class Connection extends Thread {
 			+ "</body>\n"
 			+ "</html>\n\n";
 
-	public Connection(Socket socket) {
+	public Connection(Server server, Socket socket) {
+	    this.server = server;
 		this.socket = socket;
 		try {
 			this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -57,7 +63,12 @@ public class Connection extends Thread {
                     throw new IllegalRequestFormatException("First line of request is malformed");
 
                 if(Method.GET.name().equals(first_arr[0])) {
-                    
+                    this.resource = first_arr[1];
+                    if(Files.exists(Paths.get(this.server.getRoot().toString(), this.resource))) {
+                        System.out.println("Hello");
+                    }
+                    else
+                        this.responseCode = HTTPCode.NOT_FOUND;
                 }
                 else
                     this.responseCode = HTTPCode.FORBIDDEN;
@@ -92,7 +103,7 @@ public class Connection extends Thread {
 	
 	@Override
 	public void run() {
-		this.readInput();
+		this.readRequest();
 		this.respond();
 		try {
 			Thread.sleep(500);

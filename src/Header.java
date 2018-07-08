@@ -4,17 +4,17 @@ import java.util.Map;
 public class Header {
 
     private final static String VERSION = "HTTP/1.1";
-    private String status;
+    private HTTPCode status;
     private HashMap<String, String> header = new HashMap<>();
 
-    public Header(Map<String, String> map, String status) {
+    public Header(Map<String, String> map, HTTPCode status) {
         this.status = status;
         for(Map.Entry<String, String> entry: map.entrySet()) {
             this.header.put(entry.getKey(), entry.getValue());
         }
     }
 
-    public Header(String status) {
+    public Header(HTTPCode status) {
         this.status = status;
     }
 
