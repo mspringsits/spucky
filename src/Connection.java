@@ -1,3 +1,4 @@
+import javax.xml.ws.Response;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -5,11 +6,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 
-public class Request extends Thread {
+public class Connection extends Thread {
 	
-	private Socket socket = null;
-	private BufferedReader reader = null;
-	private BufferedWriter writer = null;
+	private Socket socket;
+	private BufferedReader reader;
+	private BufferedWriter writer;
+	private Method method;
+	private String resource;
+	private HTTPCode responseCode;
 	
 	String header = 
 			"HTTP/1.1 200 OK\n"
@@ -32,8 +36,7 @@ public class Request extends Thread {
 			+ "</body>\n"
 			+ "</html>\n\n";
 
-	// handle Exceptions more beatiful
-	public Request(Socket socket) {
+	public Connection(Socket socket) {
 		this.socket = socket;
 		try {
 			this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -43,19 +46,37 @@ public class Request extends Thread {
 		}
 	}
 	
-	public void handleData() {
-		String content = "";
+	public String readRequest() {
+		StringBuilder content = new StringBuilder();
 		try {
-			String cur = "";
+		    // read and process first line of request
+		    String first = reader.readLine();
+		    if(!first.equals("")) {
+                String[] first_arr = first.split(" ");
+                if(first_arr.length != 3)
+                    throw new IllegalRequestFormatException("First line of request is malformed");
+
+                if(Method.GET.name().equals(first_arr[0])) {
+                    
+                }
+                else
+                    this.responseCode = HTTPCode.FORBIDDEN;
+            }
+            else
+                throw new IllegalRequestFormatException("First line of request is empty");
+
+		    // process header fields
+			String cur;
 			while(!((cur = reader.readLine()).equals(""))) {
-				content += cur+"\n";
+				content.append(cur);
+				content.append(System.getProperty("line.separator"));
 			}
 			socket.shutdownInput();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
 			System.out.println(content);
-			//return content;
+			return content.toString();
 		}
 	}
 	
@@ -71,7 +92,7 @@ public class Request extends Thread {
 	
 	@Override
 	public void run() {
-		this.handleData();
+		this.readInput();
 		this.respond();
 		try {
 			Thread.sleep(500);
