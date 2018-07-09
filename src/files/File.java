@@ -4,6 +4,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.FileNameMap;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -15,7 +17,7 @@ public class File extends Resource {
 
     public File(Path path) throws IOException {
         this.path = path;
-        this.CONTENT_TYPE = probeContentType(path);
+        this.CONTENT_TYPE = new MimeType().getContentType(this.path.toString());
     }
 
     public byte[] readContentFromDisk() throws IOException {
@@ -25,5 +27,10 @@ public class File extends Resource {
     @Override
     public String toString() {
         return this.path.toString();
+    }
+
+    @Override
+    public String getContentType() {
+        return this.CONTENT_TYPE;
     }
 }

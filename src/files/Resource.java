@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 public abstract class Resource {
 
-    protected String CONTENT_TYPE = "text/html";
+    protected String CONTENT_TYPE;
 
     /*
      * read requested Resource from given Path
@@ -50,7 +50,5 @@ public abstract class Resource {
     /*
      * get Content Type of file
      */
-    public String getContentType() {
-        return this.CONTENT_TYPE;
-    }
+    public abstract String getContentType();
 }

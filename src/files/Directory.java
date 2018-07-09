@@ -10,6 +10,7 @@ public class Directory extends Resource {
 
     public Directory(Collection<File> coll) {
         this.files = coll;
+        this.CONTENT_TYPE = "text/html";
     }
 
     @Override
@@ -25,5 +26,10 @@ public class Directory extends Resource {
     @Override
     public byte[] readContentFromDisk() {
         return this.toString().getBytes(Charset.forName("UTF-8"));
+    }
+
+    @Override
+    public String getContentType() {
+        return this.CONTENT_TYPE;
     }
 }
