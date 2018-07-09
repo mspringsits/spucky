@@ -1,7 +1,6 @@
 package files;
 
 import java.nio.charset.Charset;
-import java.nio.file.Path;
 import java.util.Collection;
 
 public class Directory extends Resource {
@@ -26,10 +25,5 @@ public class Directory extends Resource {
     @Override
     public byte[] readContentFromDisk() {
         return this.toString().getBytes(Charset.forName("UTF-8"));
-    }
-
-    @Override
-    public String getContentType() {
-        return this.CONTENT_TYPE;
     }
 }

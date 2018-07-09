@@ -28,9 +28,4 @@ public class File extends Resource {
     public String toString() {
         return this.path.toString();
     }
-
-    @Override
-    public String getContentType() {
-        return this.CONTENT_TYPE;
-    }
 }

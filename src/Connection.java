@@ -24,27 +24,6 @@ public class Connection extends Thread {
 	private Resource resource;
 	private HTTPCode responseCode = HTTPCode.OK;
 
-	String header = 
-			"HTTP/1.1 200 OK\n"
-			+ "Date: Mon, 23 May 2005 22:38:34 GMT\n"
-			+ "Server: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)\n"
-			+ "Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT\n"
-			+ "ETag: '3f80f-1b6-3e1cb03b'\n"
-			+ "Content-Type: text/html; charset=UTF-8\n"
-			+ "Accept-Ranges: bytes\n"
-			+ "Connection: close \n"
-			+ "\n";
-	
-	String render =
-			"<html>\n"
-			+ "<head>\n"
-			+ "<title>An Example Page</title>\n"
-			+ "</head>\n"
-			+ "<body>\n"
-			+ "Hello World, this is a very simple HTML document.\n"
-			+ "</body>\n"
-			+ "</html>\n\n";
-
 	public Connection(Server server, Socket socket) {
 	    this.server = server;
 		this.socket = socket;
@@ -59,9 +38,8 @@ public class Connection extends Thread {
 	/*
 	 * read request and return requested resources
 	 */
-	public Resource readRequest() {
+	private void readRequest() {
 		StringBuilder content = new StringBuilder();
-		Resource res = null;
 		try {
 		    // read and process first line of request
 		    String first = reader.readLine();
@@ -74,7 +52,7 @@ public class Connection extends Thread {
                     String relative_path = first_arr[1];
                     Path path = Paths.get(this.server.getRoot().toString(), relative_path);
                     if(Files.exists(path)) {
-                        res = Resource.readResource(path);
+                        this.resource = Resource.readResource(path);
                     }
                     else
                         this.responseCode = HTTPCode.NOT_FOUND;
@@ -92,23 +70,29 @@ public class Connection extends Thread {
 				content.append(cur);
 				content.append(System.getProperty("line.separator"));
 			}
-			socket.shutdownInput();
+            socket.shutdownInput();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
-			//System.out.println(content);
-			return res;
+            System.out.println(content);
 		}
 	}
-	
-	public void respond() {
+
+	/*
+	 * create response header and respond to Client
+	 */
+	private void respond() {
 		try {
-            //writer.write("HTTP/1.1 " + this.responseCode.getCode() + this.responseCode);
             Header responseHeader = new Header(new HashMap<>(), this.responseCode);
             responseHeader.add("Date", new Date().toString());
-            responseHeader.add("Content-Type", this.resource.getContentType());
-            writer.write(header);
-            writer.write(new String(this.resource.readContentFromDisk()));
+            byte[] content = this.resource.readContentFromDisk();
+            if(this.resource != null) {
+                responseHeader.add("Content-Type", this.resource.getContentType());
+                responseHeader.add("Content-Length", content.length);
+            }
+            writer.write(responseHeader.toString());
+            if(this.resource != null)
+                writer.write(new String(content));
 			writer.flush();
 			socket.shutdownOutput();
 		} catch (IOException e) {
@@ -118,8 +102,8 @@ public class Connection extends Thread {
 	
 	@Override
 	public void run() {
-		this.resource = this.readRequest();
-		this.respond();
+		this.readRequest();
+        this.respond();
 		try {
 			socket.close();
 		} catch (IOException e) {

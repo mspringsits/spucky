@@ -28,7 +28,8 @@ public abstract class Resource {
                             e.printStackTrace();
                         }
                     });
-                    return new Directory(dir);
+                    Resource res = new Directory(dir);
+                    return res;
                 }
                 catch(IOException e) {
                     e.printStackTrace();
@@ -36,7 +37,8 @@ public abstract class Resource {
             }
             else {
                 try {
-                    return new File(path);
+                    Resource res = new File(path);
+                    return res;
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -50,5 +52,7 @@ public abstract class Resource {
     /*
      * get Content Type of file
      */
-    public abstract String getContentType();
+    public String getContentType() {
+        return this.CONTENT_TYPE;
+    }
 }
