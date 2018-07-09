@@ -1,4 +1,5 @@
-import javax.xml.ws.Response;
+import files.Resource;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -6,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Connection extends Thread {
@@ -51,9 +53,13 @@ public class Connection extends Thread {
 			e.printStackTrace();
 		}
 	}
-	
-	public String readRequest() {
+
+	/*
+	 * read request and return requested resources
+	 */
+	public Resource readRequest() {
 		StringBuilder content = new StringBuilder();
+		Resource res = null;
 		try {
 		    // read and process first line of request
 		    String first = reader.readLine();
@@ -64,12 +70,14 @@ public class Connection extends Thread {
 
                 if(Method.GET.name().equals(first_arr[0])) {
                     this.resource = first_arr[1];
-                    if(Files.exists(Paths.get(this.server.getRoot().toString(), this.resource))) {
-                        System.out.println("Hello");
+                    Path path = Paths.get(this.server.getRoot().toString(), this.resource);
+                    if(Files.exists(path)) {
+                        res = Resource.readResource(path);
                     }
                     else
                         this.responseCode = HTTPCode.NOT_FOUND;
                 }
+                // anything other than GET
                 else
                     this.responseCode = HTTPCode.FORBIDDEN;
             }
@@ -86,14 +94,14 @@ public class Connection extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
-			System.out.println(content);
-			return content.toString();
+			//System.out.println(content);
+			return res;
 		}
 	}
 	
 	public void respond() {
 		try {
-			writer.write(this.header+this.render);
+			//writer.write(this.header+this.render);
 			writer.flush();
 			socket.shutdownOutput();
 		} catch (IOException e) {
@@ -106,15 +114,10 @@ public class Connection extends Thread {
 		this.readRequest();
 		this.respond();
 		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
+			socket.close();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-//		try {
-//			//socket.close();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
 	}
 
 }
