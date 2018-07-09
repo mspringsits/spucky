@@ -4,11 +4,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.stream.Stream;
 
 public abstract class Resource {
+
+    protected String CONTENT_TYPE = "text/html";
 
     /*
      * read requested Resource from given Path
@@ -19,8 +20,14 @@ public abstract class Resource {
         else {
             if(Files.isDirectory(path)) {
                 try(Stream<Path> paths = Files.walk(path)) {
-                    HashSet<Path> dir = new HashSet<>();
-                    paths.filter(Files::isRegularFile).forEach(dir::add);
+                    HashSet<File> dir = new HashSet<>();
+                    paths.filter(Files::isRegularFile).forEach(entry -> {
+                        try {
+                            dir.add(new File(entry));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
                     return new Directory(dir);
                 }
                 catch(IOException e) {
@@ -28,9 +35,22 @@ public abstract class Resource {
                 }
             }
             else {
-                System.out.println("file");
+                try {
+                    return new File(path);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
        return null;
+    }
+
+    public abstract byte[] readContentFromDisk() throws IOException;
+
+    /*
+     * get Content Type of file
+     */
+    public String getContentType() {
+        return this.CONTENT_TYPE;
     }
 }

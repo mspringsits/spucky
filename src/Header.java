@@ -29,7 +29,7 @@ public class Header {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%s %s", VERSION, this.status));
+        sb.append(String.format("%s %d %s", VERSION, this.status.getCode(), this.status));
         sb.append(System.getProperty("line.separator"));
         for (HashMap.Entry<String, String> entry: this.header.entrySet()) {
             sb.append(String.format("%s: %s", entry.getKey(), entry.getValue()));

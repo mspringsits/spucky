@@ -9,6 +9,8 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
+import java.util.HashMap;
 
 public class Connection extends Thread {
 
@@ -19,9 +21,9 @@ public class Connection extends Thread {
 	private BufferedWriter writer;
 
 	private Method method;
-	private String resource;
-	private HTTPCode responseCode;
-	
+	private Resource resource;
+	private HTTPCode responseCode = HTTPCode.OK;
+
 	String header = 
 			"HTTP/1.1 200 OK\n"
 			+ "Date: Mon, 23 May 2005 22:38:34 GMT\n"
@@ -69,8 +71,8 @@ public class Connection extends Thread {
                     throw new IllegalRequestFormatException("First line of request is malformed");
 
                 if(Method.GET.name().equals(first_arr[0])) {
-                    this.resource = first_arr[1];
-                    Path path = Paths.get(this.server.getRoot().toString(), this.resource);
+                    String relative_path = first_arr[1];
+                    Path path = Paths.get(this.server.getRoot().toString(), relative_path);
                     if(Files.exists(path)) {
                         res = Resource.readResource(path);
                     }
@@ -101,7 +103,12 @@ public class Connection extends Thread {
 	
 	public void respond() {
 		try {
-			//writer.write(this.header+this.render);
+            //writer.write("HTTP/1.1 " + this.responseCode.getCode() + this.responseCode);
+            Header responseHeader = new Header(new HashMap<>(), this.responseCode);
+            responseHeader.add("Date", new Date().toString());
+            responseHeader.add("Content-Type", this.resource.getContentType());
+            writer.write(header);
+            writer.write(new String(this.resource.readContentFromDisk()));
 			writer.flush();
 			socket.shutdownOutput();
 		} catch (IOException e) {
@@ -111,7 +118,7 @@ public class Connection extends Thread {
 	
 	@Override
 	public void run() {
-		this.readRequest();
+		this.resource = this.readRequest();
 		this.respond();
 		try {
 			socket.close();

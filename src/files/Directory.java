@@ -1,13 +1,14 @@
 package files;
 
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Collection;
 
 public class Directory extends Resource {
 
-    private Collection<Path> files;
+    private Collection<File> files;
 
-    public Directory(Collection<Path> coll) {
+    public Directory(Collection<File> coll) {
         this.files = coll;
     }
 
@@ -19,5 +20,10 @@ public class Directory extends Resource {
             sb.append(System.getProperty("line.separator"));
         });
         return sb.toString();
+    }
+
+    @Override
+    public byte[] readContentFromDisk() {
+        return this.toString().getBytes(Charset.forName("UTF-8"));
     }
 }
