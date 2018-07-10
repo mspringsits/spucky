@@ -1,14 +1,11 @@
 import files.Resource;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -18,7 +15,8 @@ public class Connection extends Thread {
 
 	private Socket socket;
 	private BufferedReader reader;
-	private BufferedWriter writer;
+	//private BufferedWriter writer_;
+	private DataOutputStream writer;
 
 	private Method method;
 	private Resource resource;
@@ -29,7 +27,7 @@ public class Connection extends Thread {
 		this.socket = socket;
 		try {
 			this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			this.writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+			this.writer = new DataOutputStream(socket.getOutputStream());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -85,15 +83,16 @@ public class Connection extends Thread {
 		try {
             Header responseHeader = new Header(new HashMap<>(), this.responseCode);
             responseHeader.add("Date", new Date().toString());
-            byte[] content = this.resource.readContentFromDisk();
+            byte[] content = null;
             if(this.resource != null) {
+                content = this.resource.readContentFromDisk();
                 responseHeader.add("Content-Type", this.resource.getContentType());
                 responseHeader.add("Content-Length", content.length);
             }
-            writer.write(responseHeader.toString());
+            writer.writeUTF(responseHeader.toString());
             if(this.resource != null)
-                writer.write(new String(content));
-			writer.flush();
+                writer.write(content);
+            writer.flush();
 			socket.shutdownOutput();
 		} catch (IOException e) {
 			e.printStackTrace();

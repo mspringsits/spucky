@@ -12,10 +12,12 @@ public class Header {
         for(Map.Entry<String, String> entry: map.entrySet()) {
             this.header.put(entry.getKey(), entry.getValue());
         }
+        this.header.put("Server", "spucky");
     }
 
     public Header(HTTPCode status) {
         this.status = status;
+        this.header.put("Server", "spucky");
     }
 
     public void add(String key, String value) {
@@ -35,6 +37,7 @@ public class Header {
             sb.append(String.format("%s: %s", entry.getKey(), entry.getValue()));
             sb.append(System.getProperty("line.separator"));
         }
+        sb.append(System.getProperty("line.separator"));
         return sb.toString();
     }
 
