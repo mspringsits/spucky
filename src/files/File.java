@@ -26,6 +26,10 @@ public class File extends Resource {
 
     @Override
     public String toString() {
-        return this.path.toString();
+        return this.path.getFileName().toString();
+    }
+
+    public Path getPath() {
+        return this.path;
     }
 }
