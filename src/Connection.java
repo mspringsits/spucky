@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -41,7 +42,8 @@ public class Connection extends Thread {
         try {
 		    // read and process first line of request
 		    String first = reader.readLine();
-		    if(!first.equals("")) {
+            System.out.println(first);
+            if(!first.equals("")) {
                 String[] first_arr = first.split(" ");
                 if(first_arr.length != 3)
                     throw new IllegalRequestFormatException("First line of request is malformed");
@@ -83,20 +85,21 @@ public class Connection extends Thread {
 		     */
 			String cur;
 			while(!((cur = reader.readLine()).equals(""))) {
-			    String[] headerLine = cur.split(": ");
+			    String[] headerLine = cur.toLowerCase().split(": ");
                 if(headerLine.length != 2) {
-			        this.responseCode = HTTPCode.BAD_REQUEST;
+                    this.responseCode = HTTPCode.BAD_REQUEST;
 			        break;
                 }
 			    this.inputHeader.add(headerLine[0], headerLine[1]);
             }
+            System.out.println(this.inputHeader);
             /*
              * process body
              */
             if(this.responseCode == HTTPCode.OK) {
                 if(this.method == Method.PUT) {
                     String contentLengthHeader;
-                    if ((contentLengthHeader = this.inputHeader.get("Content-Length")) == null)
+                    if((contentLengthHeader = this.inputHeader.get("content-length")) == null)
                         this.responseCode = HTTPCode.LENGTH_REQUIRED;
                     int contentLength;
                     try {
@@ -105,27 +108,27 @@ public class Connection extends Thread {
                         contentLength = -1;
                         this.responseCode = HTTPCode.BAD_REQUEST;
                     }
-                    if (contentLength > 0) {
+                    if(contentLength > 0) {
                         byte[] body = new byte[contentLength];
                         InputStream is = this.socket.getInputStream();
-                        is.read(body);
+                        is.read(body, 0, contentLength);
                         if(this.resource instanceof File) {
                             FileOutputStream out = new FileOutputStream(((File) this.resource).getPath().toFile());
                             out.write(body);
                             out.close();
                         }
-                        else
+                        else {
                             this.responseCode = HTTPCode.BAD_REQUEST;
+                        }
                     }
                 }
             }
-            socket.shutdownInput();
+            this.socket.shutdownInput();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
             //System.out.println(content);
 		}
-        System.out.println();
     }
 
 	/*
