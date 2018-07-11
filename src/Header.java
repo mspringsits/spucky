@@ -28,6 +28,10 @@ public class Header {
         this.header.put(key, value + "");
     }
 
+    public String get(String key) {
+        return this.header.get(key);
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
