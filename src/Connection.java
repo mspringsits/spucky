@@ -111,10 +111,16 @@ public class Connection extends Thread {
                     if(contentLength > 0) {
                         byte[] body = new byte[contentLength];
                         InputStream is = this.socket.getInputStream();
-                        is.read(body, 0, contentLength);
+                        for(int i = 0; i < contentLength; i++) {
+                            int byte_input = is.read();
+                            body[i] = (byte) byte_input;
+                        }
+                        //is.read(body, 0, contentLength);
+                        this.socket.shutdownInput();
                         if(this.resource instanceof File) {
                             FileOutputStream out = new FileOutputStream(((File) this.resource).getPath().toFile());
-                            out.write(body);
+                            out.write(body, 0, contentLength);
+                            out.flush();
                             out.close();
                         }
                         else {
@@ -123,7 +129,6 @@ public class Connection extends Thread {
                     }
                 }
             }
-            this.socket.shutdownInput();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {

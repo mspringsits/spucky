@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="spucky:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/spucky_jar</output-path>
+    <root id="archive" name="spucky.jar">
+      <element id="module-output" name="spucky" />
+    </root>
+  </artifact>
+</component>
